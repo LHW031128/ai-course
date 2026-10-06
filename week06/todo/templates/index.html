@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>할 일</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h1>할 일</h1>
+
+  <form method="post" action="{{ url_for('add') }}">
+    <input type="text" name="title">
+    <button type="submit">추가</button>
+  </form>
+  {% if error %}
+  <p>{{ error }}</p>
+  {% endif %}
+
+  <ul>
+    {% for todo in todos %}
+    <li{% if todo['done'] %} class="done"{% endif %}>
+      <form method="post" action="{{ url_for('toggle', todo_id=todo['id']) }}">
+        <button type="submit">{% if todo['done'] %}완료 해제{% else %}완료{% endif %}</button>
+      </form>
+      <span class="title">{{ todo['title'] }}</span>
+      <form method="post" action="{{ url_for('delete', todo_id=todo['id']) }}">
+        <button type="submit">삭제</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</body>
+</html>

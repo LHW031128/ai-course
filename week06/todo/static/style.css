@@ -1,0 +1,4 @@
+/* 완료된 할 일은 제목에 취소선을 긋는다. */
+.done .title {
+  text-decoration: line-through;
+}
