@@ -71,8 +71,8 @@ todo/
 | POST `/toggle/1` 두 번 | 1번이 미완료 |
 | A, B 추가 후 A 완료 | GET `/`에서 B가 A보다 먼저 나옴 |
 | POST `/delete/1` | 302, 1번이 없어짐 |
-| POST `/add` title=`` (빈 문자열) | 400, 할 일 0개 |
-| POST `/add` title=101자 | 400, 할 일 0개 |
+| POST `/add` title=`` (빈 문자열) | 400, 할 일 0개, "제목을 입력하세요." 포함 |
+| POST `/add` title=101자 | 400, 할 일 0개, "제목은 100자 이하로 입력하세요." 포함 |
 | POST `/toggle/999` | 404 |
 | POST `/delete/999` | 404 |
 

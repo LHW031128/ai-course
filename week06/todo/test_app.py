@@ -77,11 +77,13 @@ class TodoTest(unittest.TestCase):
         r = self.client.post("/add", data={"title": ""})
         self.assertEqual(r.status_code, 400)
         self.assertEqual(len(self.todos()), 0)
+        self.assertIn("제목을 입력하세요.", r.get_data(as_text=True))
 
     def test_add_101_chars(self):
         r = self.client.post("/add", data={"title": "가" * 101})
         self.assertEqual(r.status_code, 400)
         self.assertEqual(len(self.todos()), 0)
+        self.assertIn("제목은 100자 이하로 입력하세요.", r.get_data(as_text=True))
 
     def test_toggle_missing(self):
         self.assertEqual(self.client.post("/toggle/999").status_code, 404)
