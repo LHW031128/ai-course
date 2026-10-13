@@ -3,6 +3,7 @@
 # 기록 한 건은 {"kind": "지출", "memo": "점심", "amount": 8000} 모양의 dict다.
 # 함수는 받은 목록을 고치지 않고 새 목록을 돌려준다.
 
+import json
 import sys
 
 # 파이썬 3.11부터는 4300자리가 넘는 정수를 글자와 서로 바꾸지 못하게 막아 둔다.
@@ -18,6 +19,8 @@ NO_MEMO = "(내용 없음)"
 MSG_KIND = "구분을 고릅니다"
 MSG_AMOUNT_EMPTY = "금액을 입력합니다"
 MSG_AMOUNT_BAD = "금액은 0보다 큰 정수로 입력합니다"
+MSG_LOAD = "저장된 기록을 읽지 못했습니다"
+MSG_SAVE = "기록을 저장하지 못했습니다"
 
 
 def parse_amount(text):
@@ -85,3 +88,36 @@ def format_signed(kind, amount):
 def is_minus(amount):
     """음수면 True. 잔액 색을 정할 때 쓴다."""
     return amount < 0
+
+
+def entries_to_text(entries):
+    """기록 목록을 저장 파일에 쓸 JSON 글자로 바꾼다."""
+    return json.dumps(entries, ensure_ascii=False)
+
+
+def entries_from_text(text):
+    """저장 파일에서 읽은 글자를 (기록 목록, 안내 문구)로 바꾼다.
+    text가 None이면 저장 파일이 없는 것이다. 맞지 않는 기록은 건너뛴다."""
+    if text is None:
+        return [], ""
+    try:
+        data = json.loads(text)
+    except (TypeError, ValueError, RecursionError):   # JSON이 아니거나 너무 깊게 겹친 글자
+        return [], MSG_LOAD
+    if not isinstance(data, list):
+        return [], MSG_LOAD
+    entries = []
+    skipped = 0
+    for item in data:
+        if (isinstance(item, dict)
+                and item.get("kind") in KINDS
+                and isinstance(item.get("memo"), str)
+                and type(item.get("amount")) is int      # True, 8000.0, "8000"은 받지 않는다
+                and item["amount"] > 0):
+            entries.append({"kind": item["kind"], "memo": clean_memo(item["memo"]),
+                            "amount": item["amount"]})
+        else:
+            skipped += 1
+    if skipped:
+        return entries, f"저장된 기록 {skipped}건을 읽지 못했습니다"
+    return entries, ""

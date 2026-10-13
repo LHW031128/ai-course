@@ -352,4 +352,5 @@ ft.run(main)
 
 - `logic.py`는 파일을 열지 않는다. `entries_to_text`는 목록을 JSON 글자로 바꾸고, `entries_from_text`는 글자를 검사해 `(기록 목록, 안내 문구)`로 바꾼다. 둘 다 4절의 표로 검사한다.
 - `main.py`는 파일을 읽고 쓰는 일만 한다. 읽은 글자를 그대로 `entries_from_text`에 넘긴다. 파일이 없으면 `None`을, 파일은 있는데 읽지 못하면 `""`를 넘긴다.
+- 읽을 때 파일 맨 앞의 BOM은 무시한다. 메모장에서 고쳐 저장한 파일도 읽을 수 있다. UTF-8이 아닌 파일은 읽지 못한 것으로 본다.
 - `records.json`은 저장소에 올리지 않는다(`.gitignore`).

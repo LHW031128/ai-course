@@ -33,6 +33,7 @@ def expense(memo, amount):
 MSG_EMPTY = "금액을 입력합니다"
 MSG_BAD = "금액은 0보다 큰 정수로 입력합니다"
 MSG_KIND = "구분을 고릅니다"
+MSG_LOAD = "저장된 기록을 읽지 못했습니다"
 
 
 # parse_amount
@@ -155,6 +156,63 @@ check("format_signed 지출 큰 수", logic.format_signed("지출", 1234567), "-
 check("is_minus(-1)", logic.is_minus(-1), True)
 check("is_minus(0)", logic.is_minus(0), False)
 check("is_minus(42000)", logic.is_minus(42000), False)
+
+# entries_to_text
+check("entries_to_text 빈 목록", logic.entries_to_text([]), "[]")
+check("entries_to_text 한 줄",
+      logic.entries_to_text([income("용돈", 50000)]),
+      '[{"kind": "수입", "memo": "용돈", "amount": 50000}]')
+check("entries_to_text 두 줄",
+      logic.entries_to_text([income("용돈", 50000), expense("점심", 8000)]),
+      '[{"kind": "수입", "memo": "용돈", "amount": 50000}, '
+      '{"kind": "지출", "memo": "점심", "amount": 8000}]')
+
+# entries_from_text
+GOOD = '{"kind": "수입", "memo": "용돈", "amount": 50000}'      # 용돈 기록
+check("entries_from_text None (파일 없음)", logic.entries_from_text(None), ([], ""))
+check('entries_from_text "[]"', logic.entries_from_text("[]"), ([], ""))
+check("entries_from_text 한 줄",
+      logic.entries_from_text(f"[{GOOD}]"), ([income("용돈", 50000)], ""))
+check("entries_from_text 저장했다 읽으면 그대로",
+      logic.entries_from_text(logic.entries_to_text(three)), (three, ""))
+huge = [income("큰돈", 10 ** 5000 - 1)]
+check("entries_from_text 5000자리 금액을 저장했다 읽기",
+      logic.entries_from_text(logic.entries_to_text(huge)), (huge, ""))
+check('entries_from_text "" (빈 파일)', logic.entries_from_text(""), ([], MSG_LOAD))
+check('entries_from_text "abc"', logic.entries_from_text("abc"), ([], MSG_LOAD))
+check("entries_from_text 배열이 아님", logic.entries_from_text(GOOD), ([], MSG_LOAD))
+check('entries_from_text "[" 100000번',
+      logic.entries_from_text("[" * 100000), ([], MSG_LOAD))
+check("entries_from_text 없는 구분 1건",
+      logic.entries_from_text(f'[{GOOD}, {{"kind": "기타", "memo": "x", "amount": 1}}]'),
+      ([income("용돈", 50000)], "저장된 기록 1건을 읽지 못했습니다"))
+check("entries_from_text 잘못된 금액 5건",
+      logic.entries_from_text(
+          f'[{GOOD},'
+          ' {"kind": "지출", "memo": "a", "amount": "8000"},'
+          ' {"kind": "지출", "memo": "b", "amount": 0},'
+          ' {"kind": "지출", "memo": "c", "amount": -5},'
+          ' {"kind": "지출", "memo": "d", "amount": 1.5},'
+          ' {"kind": "지출", "memo": "e", "amount": true}]'),
+      ([income("용돈", 50000)], "저장된 기록 5건을 읽지 못했습니다"))
+check("entries_from_text 잘못된 내용 2건",
+      logic.entries_from_text(
+          f'[{GOOD},'
+          ' {"kind": "지출", "amount": 8000},'
+          ' {"kind": "지출", "memo": 3, "amount": 8000}]'),
+      ([income("용돈", 50000)], "저장된 기록 2건을 읽지 못했습니다"))
+check("entries_from_text 기록이 아닌 것 4건",
+      logic.entries_from_text(f'[3, "a", null, [1], {GOOD}]'),
+      ([income("용돈", 50000)], "저장된 기록 4건을 읽지 못했습니다"))
+check("entries_from_text 내용 정리",
+      logic.entries_from_text(
+          '[{"kind": "지출", "memo": "  점심  ", "amount": 8000},'
+          ' {"kind": "지출", "memo": "", "amount": 1000}]'),
+      ([expense("점심", 8000), expense("(내용 없음)", 1000)], ""))
+check("entries_from_text 다른 항목은 버린다",
+      logic.entries_from_text(
+          '[{"kind": "지출", "memo": "점심", "amount": 8000, "date": "10-13"}]'),
+      ([expense("점심", 8000)], ""))
 
 print(f"통과 {passed}개, 실패 {failed}개")
 sys.exit(1 if failed else 0)
