@@ -2,26 +2,26 @@ import sqlite3
 import ollama
 import numpy as np
 
-con = sqlite3.connect("campus.db")
-rows = con.execute("SELECT id, name, embedding FROM facility").fetchall()
+con = sqlite3.connect("course.db")
+rows = con.execute("SELECT id, name, embedding FROM script").fetchall()
 names = [r[1] for r in rows]
 V = np.stack([np.frombuffer(r[2], dtype=np.float32) for r in rows])
 V = V / np.linalg.norm(V, axis=1, keepdims=True)
 
-# (질문, 정답 시설 이름)
+# (질문, 정답 파일)
 TESTS = [
-    ("과제 출력하려면 어디로 가?", "프린터실"),
-    ("밤 늦게까지 공부할 수 있는 데 있어?", "열람실"),
-    ("조별 과제 모여서 할 방 어떻게 빌려?", "그룹 스터디룸"),
-    ("차 가지고 와도 돼?", "주차장"),
-    ("휴학 서류 어디 내?", "학과 사무실"),
-    ("학생증 다시 만들려면?", "학생지원팀"),
-    ("재학증명서 뽑는 기계 어디 있어?", "무인 증명서 발급기"),
-    ("점심 제일 싼 데가 어디야?", "학생 식당"),
-    ("운동 기구 쓰려면 돈 내야 해?", "헬스장"),
-    ("택배 보내려면?", "우체국"),
-    ("빨래는 어디서 해?", "세탁실"),
-    ("GPU 있는 컴퓨터 쓸 수 있는 데?", "소프트웨어 실습실 B"),
+    ("내 컴퓨터 GPU 메모리로 몇 B 모델까지 되는지 따져 본 코드", "week04/vram.py"),
+    ("돈 내는 기능 만든 거 어디 있지?", "week05/toss/app.py"),
+    ("AI한테 아니라고 우기면 말 바꾸는지 실험한 거", "week03/agree.py"),
+    ("단어들 점 찍어서 그림으로 그린 코드", "week02/plot2d.py"),
+    ("주차비 계산 맞는지 확인하는 파일", "week08/test_parking_calc.py"),
+    ("용돈 관리 프로그램 화면 코드", "week07/account_book/main.py"),
+    ("한국어가 영어보다 토큰 더 먹는지 본 거", "week03/tokens.py"),
+    ("예시 몇 개 보여 주면 더 잘 맞히는지 본 실험", "week03/fewshot.py"),
+    ("모델이 파이썬 함수를 직접 부르게 한 코드", "week05/tools.py"),
+    ("내 컴퓨터 모델이랑 학교 서버 모델한테 같은 질문 한 거", "week05/twoservers.py"),
+    ("검색이 몇 개 맞았는지 점수 매기는 코드", "week09/evalrag.py"),
+    ("사과랑 애플이 비슷하게 나오는지 본 거", "week02/similarity.py"),
 ]
 
 hit1 = hit3 = 0

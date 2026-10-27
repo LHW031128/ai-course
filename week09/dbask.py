@@ -5,9 +5,9 @@ import numpy as np
 from openai import OpenAI
 
 client = OpenAI(base_url="https://krchoi.com/gemma4/v1", api_key="none")
-con = sqlite3.connect("campus.db")
+con = sqlite3.connect("course.db")
 
-rows = con.execute("SELECT id, name, building, floor, hours, category, description, embedding FROM facility").fetchall()
+rows = con.execute("SELECT id, name, week, category, tools, description, embedding FROM script").fetchall()
 V = np.stack([np.frombuffer(r[-1], dtype=np.float32) for r in rows])
 V = V / np.linalg.norm(V, axis=1, keepdims=True)
 
@@ -21,11 +21,11 @@ def search(question, k=3):
 
 def answer(question):
     found = search(question)
-    context = "\n".join(f"- {name} ({building} {floor}층, {hours}): {desc}"
-                        for _, (id_, name, building, floor, hours, cat, desc) in found)
-    prompt = f"""아래 시설 목록만 근거로 질문에 답한다. 목록에 없는 내용은 "자료에 없습니다"라고 답한다. 답은 두 문장 이내로 쓴다.
+    context = "\n".join(f"- {name} ({week}주차, {cat}, {tools}): {desc}"
+                        for _, (id_, name, week, cat, tools, desc) in found)
+    prompt = f"""아래 실습 파일 목록만 근거로 질문에 답한다. 목록에 없는 내용은 "자료에 없습니다"라고 답한다. 답은 두 문장 이내로 쓴다.
 
-시설 목록:
+실습 파일 목록:
 {context}
 
 질문: {question}"""
@@ -35,11 +35,11 @@ def answer(question):
 
 
 questions = sys.argv[1:] or [
-    "과제 출력하려면 어디로 가?",
-    "밤 늦게까지 공부할 수 있는 데 있어?",
-    "조별 과제 모여서 할 방 어떻게 빌려?",
-    "차 가지고 와도 돼?",
-    "수영장은 어디야?",
+    "돈 내는 기능 만든 거 어디 있지?",
+    "AI한테 아니라고 우기면 말 바꾸는지 실험한 거",
+    "주차비 계산 맞는지 확인하는 파일",
+    "모델이 파이썬 함수를 직접 부르게 한 코드",
+    "엑셀 파일 읽는 코드 있어?",
 ]
 for q in questions:
     found, a = answer(q)
